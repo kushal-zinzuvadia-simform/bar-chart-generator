@@ -1,0 +1,23 @@
+import type { ChartItem } from '../types/chart';
+
+type ValidationResult =
+    | { valid: true }
+    | { valid: false; message: string };
+
+export function validateChartInput(
+    prev: ChartItem[],
+    label: string,
+    value: string
+): ValidationResult {
+    if (!label) return { valid: false, message: 'Please add X-axis data.' };
+    if (value === '') return { valid: false, message: 'Please add Y-axis data.' };
+    if (isNaN(Number(value))) return { valid: false, message: 'Y-axis must be a number.' };
+    if (Number(value) < 0) return { valid: false, message: 'Y-axis must be non-negative.' };
+
+    const isDuplicate = prev.some(
+        (item) => item.label.toLowerCase() === label.toLowerCase()
+    );
+    if (isDuplicate) return { valid: false, message: 'X-axis label must be unique.' };
+
+    return { valid: true };
+}

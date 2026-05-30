@@ -1,36 +1,32 @@
 import { useRef } from 'react';
-import type { ChartItem } from '../../App';
+import toast from 'react-hot-toast';
 
 type InputFormProps = {
-  setChartData: React.Dispatch<React.SetStateAction<ChartItem[]>>;
+  onAdd: (label: string, value: string) => boolean;
 };
 
-const InputForm = ({ setChartData }: InputFormProps) => {
+const InputForm = ({ onAdd }: InputFormProps) => {
   const labelRef = useRef<HTMLInputElement>(null);
   const valueRef = useRef<HTMLInputElement>(null);
 
-  const handleInput = (e: React.SubmitEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
 
     const label = labelRef.current?.value.trim() ?? '';
     const value = valueRef.current?.value ?? '';
-    if (!label || value === '') return;
 
-    setChartData((prev: ChartItem[]) => [
-      ...prev,
-      {
-        label,
-        value: Number(value),
-      },
-    ]);
+    const added = onAdd(label, value);
 
-    if (labelRef.current) labelRef.current.value = '';
-    if (valueRef.current) valueRef.current.value = '';
+    if (added) {
+      if (labelRef.current) labelRef.current.value = '';
+      if (valueRef.current) valueRef.current.value = '';
+      toast.success(`Added data "${label}: ${value}"`);
+    }
   };
 
   return (
     <div className="p-4">
-      <form className="flex items-center gap-3" onSubmit={handleInput}>
+      <form className="flex items-center gap-3" onSubmit={handleSubmit}>
         <label htmlFor="inputX" className="text-sm font-medium">
           X:
         </label>
