@@ -18,9 +18,12 @@ const InputForm = ({ onAdd }: InputFormProps) => {
     const added = onAdd(label, value);
 
     if (added) {
-      if (labelRef.current) labelRef.current.value = '';
+      if (labelRef.current) {
+        labelRef.current.value = '';
+        labelRef.current.focus();
+      }
       if (valueRef.current) valueRef.current.value = '';
-      toast.success(`Added data "${label}: ${value}"`);
+      toast.success(`Added data "${label}: ${value}"`, { duration: 3000 });
     }
   };
 
@@ -33,6 +36,8 @@ const InputForm = ({ onAdd }: InputFormProps) => {
         <input
           id="inputX"
           type="text"
+          placeholder="Category (e.g., Electronics)"
+          maxLength={20}
           ref={labelRef}
           className="border rounded px-3 py-2 text-sm outline-none focus:ring-1"
         />
@@ -43,6 +48,8 @@ const InputForm = ({ onAdd }: InputFormProps) => {
         <input
           id="inputY"
           type="number"
+          placeholder="Value (e.g., 20)"
+          max={10000000000}
           ref={valueRef}
           className="border rounded px-3 py-2 text-sm outline-none focus:ring-1"
         />
