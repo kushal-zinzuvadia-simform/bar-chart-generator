@@ -9,12 +9,14 @@ export function useChartData() {
   function addItem(label: string, value: string) {
     const result = validateChartInput(chartData, label, value);
 
-    if (!result.valid) {
+    if (result.valid === false) {
       toast.error(result.message);
       return false;
     }
 
     setChartData((prev) => [...prev, { label, value: Number(value) }]);
+
+    toast.success(`Added data "${label}: ${value}"`, { duration: 3000 });
     return true;
   }
 

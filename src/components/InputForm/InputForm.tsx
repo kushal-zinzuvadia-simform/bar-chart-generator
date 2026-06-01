@@ -1,5 +1,4 @@
 import { useRef } from 'react';
-import toast from 'react-hot-toast';
 
 type InputFormProps = {
   onAdd: (label: string, value: string) => boolean;
@@ -23,7 +22,6 @@ const InputForm = ({ onAdd }: InputFormProps) => {
         labelRef.current.focus();
       }
       if (valueRef.current) valueRef.current.value = '';
-      toast.success(`Added data "${label}: ${value}"`, { duration: 3000 });
     }
   };
 
