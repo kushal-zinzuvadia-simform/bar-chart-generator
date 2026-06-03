@@ -9,6 +9,12 @@ export function validateChartInput(
 ): ValidationResult {
   if (!label) return { valid: false, message: 'Please add X-axis data.' };
 
+  if (!/[a-zA-Z0-9]/.test(label))
+    return {
+      valid: false,
+      message: 'X-axis label cannot contain only special characters.',
+    };
+
   if (value === '') return { valid: false, message: 'Please add Y-axis data.' };
 
   if (isNaN(Number(value)))
