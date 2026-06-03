@@ -1,7 +1,7 @@
 import type { ChartItem } from '../../types/chart';
 
 type DataTableProps = {
-  data: ChartItem[];
+  data: Array<ChartItem>;
 };
 
 const DataTable = ({ data }: DataTableProps) => {

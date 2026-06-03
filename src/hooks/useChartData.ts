@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import type { ChartItem } from '../types/chart';
+import type { AddItemProps, ChartItem } from '../types/chart';
 import { validateChartInput } from '../utils/validateChartInput';
 
 export function useChartData() {
-  const [chartData, setChartData] = useState<ChartItem[]>([]);
+  const [chartData, setChartData] = useState<Array<ChartItem>>([]);
 
-  function addItem(label: string, value: string) {
-    const result = validateChartInput(chartData, label, value);
+  function addItem({ label, value }: AddItemProps) {
+    const result = validateChartInput({ chartData, label, value });
 
     if (result.valid === false) {
       toast.error(result.message);

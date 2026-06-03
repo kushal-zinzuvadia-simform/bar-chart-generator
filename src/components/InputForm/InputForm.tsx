@@ -1,7 +1,8 @@
 import { useRef } from 'react';
+import type { AddItemProps } from '../../types/chart';
 
 type InputFormProps = {
-  onAdd: (label: string, value: string) => boolean;
+  onAdd: ({ label, value }: AddItemProps) => boolean;
 };
 
 const InputForm = ({ onAdd }: InputFormProps) => {
@@ -14,7 +15,7 @@ const InputForm = ({ onAdd }: InputFormProps) => {
     const label = labelRef.current?.value.trim() ?? '';
     const value = valueRef.current?.value ?? '';
 
-    const added = onAdd(label, value);
+    const added = onAdd({ label, value });
 
     if (added) {
       if (labelRef.current) {

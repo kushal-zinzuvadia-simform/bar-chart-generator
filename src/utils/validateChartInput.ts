@@ -2,11 +2,17 @@ import type { ChartItem } from '../types/chart';
 
 type ValidationResult = { valid: true } | { valid: false; message: string };
 
-export function validateChartInput(
-  prev: ChartItem[],
-  label: string,
-  value: string
-): ValidationResult {
+type ChartInput = {
+  chartData: Array<ChartItem>;
+  label: string;
+  value: string;
+};
+
+export function validateChartInput({
+  chartData,
+  label,
+  value,
+}: ChartInput): ValidationResult {
   if (!label) return { valid: false, message: 'Please add X-axis data.' };
 
   if (!/[a-zA-Z0-9]/.test(label))
@@ -23,7 +29,7 @@ export function validateChartInput(
   if (Number(value) < 0)
     return { valid: false, message: 'Y-axis must be non-negative.' };
 
-  const isDuplicate = prev.some(
+  const isDuplicate = chartData.some(
     (item) => item.label.toLowerCase() === label.toLowerCase()
   );
 
