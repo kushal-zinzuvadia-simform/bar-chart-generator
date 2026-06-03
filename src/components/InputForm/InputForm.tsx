@@ -13,7 +13,7 @@ const InputForm = ({ onAdd }: InputFormProps) => {
     e.preventDefault();
 
     const label = labelRef.current?.value.trim() ?? '';
-    const value = valueRef.current?.value ?? '';
+    const value = valueRef.current?.value.trim() ?? '';
 
     const added = onAdd({ label, value });
 
