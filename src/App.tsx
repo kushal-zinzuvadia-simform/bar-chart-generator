@@ -1,6 +1,6 @@
+import DataTable from './components/DataTable/DataTable';
 import InputForm from './components/InputForm/InputForm';
 import { useChartData } from './hooks/useChartData';
-import DataTable from './components/DataTable/DataTable';
 
 function App() {
   const { chartData, addItem } = useChartData();
