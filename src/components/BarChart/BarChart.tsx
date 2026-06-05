@@ -16,6 +16,12 @@ const BarChart = ({ data }: BarChartProps) => {
     data.length > 0 ? Math.max(...data.map((item) => item.value)) : 0;
   const maxY = maxDataValue > 0 ? Math.ceil(maxDataValue * 1.15) : 100;
 
+  const ticksCount = 5;
+
+  const yTicks = Array.from({ length: ticksCount }, (_, i) =>
+    Math.round((maxY / (ticksCount - 1)) * i)
+  );
+
   const xStep = data.length > 0 ? plotWidth / data.length : plotWidth;
   const maxBarWidth = 48;
   const barRatio = 0.6;
@@ -47,6 +53,35 @@ const BarChart = ({ data }: BarChartProps) => {
               stroke="rgba(148, 163, 184, 1)"
               strokeWidth={1.5}
             />
+
+            {yTicks.map((tickValue) => {
+              const yPos =
+                padding.top + plotHeight - (tickValue / maxY) * plotHeight;
+
+              return (
+                <g key={tickValue}>
+                  <line
+                    x1={padding.left}
+                    y1={yPos}
+                    x2={svgWidth - padding.right}
+                    y2={yPos}
+                    stroke="#888b90"
+                    strokeWidth={1}
+                    strokeDasharray="4 4"
+                  />
+
+                  <text
+                    x={padding.left - 10}
+                    y={yPos + 4}
+                    textAnchor="end"
+                    fontSize={18}
+                    fill="#64748b"
+                  >
+                    {tickValue}
+                  </text>
+                </g>
+              );
+            })}
 
             {data.map((item, index) => {
               const barWidth = Math.min(xStep * barRatio, maxBarWidth);
