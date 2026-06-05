@@ -33,7 +33,10 @@ const InputForm = ({ onAdd }: InputFormProps) => {
       </h3>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="inputX" className="text-xs font-semibold uppercase tracking-wider">
+          <label
+            htmlFor="inputX"
+            className="text-xs font-semibold uppercase tracking-wider"
+          >
             X-Axis Label (Category)
           </label>
           <input
@@ -47,7 +50,10 @@ const InputForm = ({ onAdd }: InputFormProps) => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="inputY" className="text-xs font-semibold uppercase tracking-wider">
+          <label
+            htmlFor="inputY"
+            className="text-xs font-semibold uppercase tracking-wider"
+          >
             Y-Axis Value (Numeric)
           </label>
           <input
@@ -62,7 +68,7 @@ const InputForm = ({ onAdd }: InputFormProps) => {
 
         <button
           type="submit"
-          className="w-full bg-black text-white font-medium py-3 px-4 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-[1px] active:translate-y-0 hover:cursor-pointer flex items-center justify-center gap-2"
+          className="w-full bg-black text-white font-medium py-3 px-4 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-px active:translate-y-0 hover:cursor-pointer flex items-center justify-center gap-2"
         >
           + Add to Chart
         </button>
