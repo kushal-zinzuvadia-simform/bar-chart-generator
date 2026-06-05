@@ -1,4 +1,5 @@
 export interface ChartItem {
+  id: string;
   label: string;
   value: number;
 }
