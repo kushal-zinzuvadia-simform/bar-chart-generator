@@ -22,7 +22,10 @@ const BarChart = ({ data }: BarChartProps) => {
     Math.round((maxY / (ticksCount - 1)) * i)
   );
 
-  const xStep = data.length > 0 ? plotWidth / data.length : plotWidth;
+  const count = data.length;
+
+  const xStep = count > 0 ? plotWidth / count : plotWidth;
+
   const maxBarWidth = 48;
   const barRatio = 0.6;
 
@@ -91,14 +94,26 @@ const BarChart = ({ data }: BarChartProps) => {
               const yPos = padding.top + plotHeight - barHeight;
 
               return (
-                <rect
-                  key={index}
-                  x={xPos}
-                  y={yPos}
-                  width={barWidth}
-                  height={barHeight}
-                  rx={5}
-                />
+                <g key={item.id}>
+                  <rect
+                    x={xPos}
+                    y={yPos}
+                    width={barWidth}
+                    height={barHeight}
+                    fill="#6366f1"
+                    rx={5}
+                  />
+
+                  <text
+                    x={xPos + barWidth / 2}
+                    y={svgHeight - padding.bottom + 20}
+                    textAnchor="middle"
+                    fontSize={18}
+                    fill="#64748b"
+                  >
+                    {item.label}
+                  </text>
+                </g>
               );
             })}
           </svg>
