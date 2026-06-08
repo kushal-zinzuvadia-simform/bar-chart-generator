@@ -1,7 +1,16 @@
+import { useState } from 'react';
 import type { ChartItem } from '../../types/chart';
 
 type BarChartProps = {
   data: Array<ChartItem>;
+};
+
+type TooltipState = {
+  visible: boolean;
+  x: number;
+  y: number;
+  label: string;
+  value: number;
 };
 
 const BarChart = ({ data }: BarChartProps) => {
@@ -23,11 +32,22 @@ const BarChart = ({ data }: BarChartProps) => {
   );
 
   const count = data.length;
-
   const xStep = count > 0 ? plotWidth / count : plotWidth;
 
   const maxBarWidth = 48;
   const barRatio = 0.6;
+
+  const [tooltip, setTooltip] = useState<TooltipState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    label: '',
+    value: 0,
+  });
+
+  const tooltipWidth = 110;
+  const tooltipHeight = 48;
+  const tooltipOffset = 12;
 
   return (
     <div className="border rounded-2xl p-6 w-full flex flex-col gap-4 relative">
@@ -39,7 +59,10 @@ const BarChart = ({ data }: BarChartProps) => {
 
       <div className="relative w-full flex-1 min-h-75 flex items-center justify-center">
         <div className="w-full relative select-none">
-          <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
+          <svg
+            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+            style={{ overflow: 'visible' }}
+          >
             <line
               x1={padding.left}
               y1={padding.top}
@@ -100,22 +123,83 @@ const BarChart = ({ data }: BarChartProps) => {
                     y={yPos}
                     width={barWidth}
                     height={barHeight}
-                    fill="#6366f1"
+                    fill={
+                      tooltip.visible && tooltip.label === item.label
+                        ? '#4f46e5'
+                        : '#6366f1'
+                    }
                     rx={5}
+                    style={{ cursor: 'pointer', transition: 'fill 0.15s ease' }}
+                    onMouseEnter={() =>
+                      setTooltip({
+                        visible: true,
+                        x: xPos + barWidth / 2,
+                        y: yPos,
+                        label: item.label,
+                        value: item.value,
+                      })
+                    }
+                    onMouseLeave={() =>
+                      setTooltip((prev) => ({ ...prev, visible: false }))
+                    }
                   />
-
-                  <text
-                    x={xPos + barWidth / 2}
-                    y={svgHeight - padding.bottom + 20}
-                    textAnchor="middle"
-                    fontSize={18}
-                    fill="#64748b"
-                  >
-                    {item.label}
-                  </text>
                 </g>
               );
             })}
+
+            {tooltip.visible &&
+              (() => {
+                const rawX = tooltip.x - tooltipWidth / 2;
+                const clampedX = Math.min(
+                  Math.max(rawX, padding.left),
+                  svgWidth - padding.right - tooltipWidth
+                );
+                const tooltipY = tooltip.y - tooltipHeight - tooltipOffset;
+
+                return (
+                  <g pointerEvents="none">
+                    <rect
+                      x={clampedX}
+                      y={tooltipY}
+                      width={tooltipWidth}
+                      height={tooltipHeight}
+                      rx={6}
+                      fill="#1e293b"
+                      opacity={0.92}
+                    />
+                    {/* Arrow */}
+                    <polygon
+                      points={`
+                      ${tooltip.x - 6},${tooltipY + tooltipHeight}
+                      ${tooltip.x + 6},${tooltipY + tooltipHeight}
+                      ${tooltip.x},${tooltipY + tooltipHeight + 6}
+                    `}
+                      fill="#1e293b"
+                      opacity={0.92}
+                    />
+                    <text
+                      x={clampedX + tooltipWidth / 2}
+                      y={tooltipY + 18}
+                      textAnchor="middle"
+                      fontSize={13}
+                      fill="#94a3b8"
+                      fontWeight={400}
+                    >
+                      {tooltip.label}
+                    </text>
+                    <text
+                      x={clampedX + tooltipWidth / 2}
+                      y={tooltipY + 36}
+                      textAnchor="middle"
+                      fontSize={15}
+                      fill="#f1f5f9"
+                      fontWeight={600}
+                    >
+                      {tooltip.value}
+                    </text>
+                  </g>
+                );
+              })()}
           </svg>
         </div>
       </div>
