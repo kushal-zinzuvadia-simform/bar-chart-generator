@@ -13,6 +13,22 @@ type TooltipState = {
   value: number;
 };
 
+const TOOLTIP_WIDTH = 110;
+const TOOLTIP_HEIGHT = 48;
+const TOOLTIP_OFFSET = 12;
+const TOOLTIP_PADDING_X = 10;
+const LABEL_FONT_SIZE = 13;
+// Approximate character width for the label
+const APPROX_CHAR_WIDTH = LABEL_FONT_SIZE * 0.56;
+const MAX_LABEL_CHARS = Math.floor(
+  (TOOLTIP_WIDTH - TOOLTIP_PADDING_X * 2) / APPROX_CHAR_WIDTH
+);
+
+const truncateLabel = (label: string): string => {
+  if (label.length <= MAX_LABEL_CHARS) return label;
+  return label.slice(0, MAX_LABEL_CHARS - 1) + '…';
+};
+
 const BarChart = ({ data }: BarChartProps) => {
   const svgWidth = 600;
   const svgHeight = 400;
@@ -44,10 +60,6 @@ const BarChart = ({ data }: BarChartProps) => {
     label: '',
     value: 0,
   });
-
-  const tooltipWidth = 110;
-  const tooltipHeight = 48;
-  const tooltipOffset = 12;
 
   return (
     <div className="border rounded-2xl p-6 w-full flex flex-col gap-4 relative">
@@ -149,46 +161,46 @@ const BarChart = ({ data }: BarChartProps) => {
 
             {tooltip.visible &&
               (() => {
-                const rawX = tooltip.x - tooltipWidth / 2;
+                const rawX = tooltip.x - TOOLTIP_WIDTH / 2;
                 const clampedX = Math.min(
                   Math.max(rawX, padding.left),
-                  svgWidth - padding.right - tooltipWidth
+                  svgWidth - padding.right - TOOLTIP_WIDTH
                 );
-                const tooltipY = tooltip.y - tooltipHeight - tooltipOffset;
+                const tooltipY = tooltip.y - TOOLTIP_HEIGHT - TOOLTIP_OFFSET;
+                const truncatedLabel = truncateLabel(tooltip.label);
 
                 return (
                   <g pointerEvents="none">
                     <rect
                       x={clampedX}
                       y={tooltipY}
-                      width={tooltipWidth}
-                      height={tooltipHeight}
+                      width={TOOLTIP_WIDTH}
+                      height={TOOLTIP_HEIGHT}
                       rx={6}
                       fill="#1e293b"
                       opacity={0.92}
                     />
-                    {/* Arrow */}
                     <polygon
                       points={`
-                      ${tooltip.x - 6},${tooltipY + tooltipHeight}
-                      ${tooltip.x + 6},${tooltipY + tooltipHeight}
-                      ${tooltip.x},${tooltipY + tooltipHeight + 6}
-                    `}
+                        ${tooltip.x - 6},${tooltipY + TOOLTIP_HEIGHT}
+                        ${tooltip.x + 6},${tooltipY + TOOLTIP_HEIGHT}
+                        ${tooltip.x},${tooltipY + TOOLTIP_HEIGHT + 6}
+                      `}
                       fill="#1e293b"
                       opacity={0.92}
                     />
                     <text
-                      x={clampedX + tooltipWidth / 2}
+                      x={clampedX + TOOLTIP_WIDTH / 2}
                       y={tooltipY + 18}
                       textAnchor="middle"
-                      fontSize={13}
+                      fontSize={LABEL_FONT_SIZE}
                       fill="#94a3b8"
                       fontWeight={400}
                     >
-                      {tooltip.label}
+                      {truncatedLabel}
                     </text>
                     <text
-                      x={clampedX + tooltipWidth / 2}
+                      x={clampedX + TOOLTIP_WIDTH / 2}
                       y={tooltipY + 36}
                       textAnchor="middle"
                       fontSize={15}
