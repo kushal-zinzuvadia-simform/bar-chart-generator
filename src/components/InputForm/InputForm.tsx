@@ -59,6 +59,7 @@ const InputForm = ({ onAdd }: InputFormProps) => {
           <input
             id="inputY"
             type="number"
+            step="any"
             placeholder="e.g. 150"
             max={10000000000}
             ref={valueRef}

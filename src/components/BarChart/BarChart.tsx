@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { ChartItem } from '../../types/chart';
 
 type BarChartProps = {
@@ -29,29 +29,86 @@ const truncateLabel = (label: string): string => {
   return label.slice(0, MAX_LABEL_CHARS - 1) + '…';
 };
 
+const truncateXLabel = (label: string, maxLen: number = 12): string => {
+  if (label.length <= maxLen) return label;
+  return label.slice(0, maxLen - 1) + '…';
+};
+
+// Heckbert's Nice Numbers algorithm
+const niceNum = (range: number, round: boolean): number => {
+  const exponent = Math.floor(Math.log10(range));
+  const fraction = range / Math.pow(10, exponent);
+  let niceFraction: number;
+
+  if (round) {
+    if (fraction < 1.5) niceFraction = 1;
+    else if (fraction < 3) niceFraction = 2;
+    else if (fraction < 7) niceFraction = 5;
+    else niceFraction = 10;
+  } else {
+    if (fraction <= 1) niceFraction = 1;
+    else if (fraction <= 2) niceFraction = 2;
+    else if (fraction <= 5) niceFraction = 5;
+    else niceFraction = 10;
+  }
+
+  return niceFraction * Math.pow(10, exponent);
+};
+
+const getNiceTicks = (
+  maxVal: number,
+  ticksCount: number = 5
+): { ticks: number[]; max: number } => {
+  if (maxVal <= 0) {
+    return {
+      ticks: [0, 25, 50, 75, 100],
+      max: 100,
+    };
+  }
+
+  const range = niceNum(maxVal, false);
+  const step = niceNum(range / (ticksCount - 1), true);
+  const graphMin = 0;
+
+  const ticks: number[] = [];
+  for (let i = 0; i < ticksCount; i++) {
+    ticks.push(parseFloat((graphMin + i * step).toFixed(8)));
+  }
+
+  const graphMax = ticks[ticksCount - 1];
+
+  if (graphMax < maxVal) {
+    const adjustedStep = niceNum((maxVal - graphMin) / (ticksCount - 1), false);
+    const adjustedTicks: number[] = [];
+    for (let i = 0; i < ticksCount; i++) {
+      adjustedTicks.push(parseFloat((graphMin + i * adjustedStep).toFixed(8)));
+    }
+    return {
+      ticks: adjustedTicks,
+      max: adjustedTicks[ticksCount - 1],
+    };
+  }
+
+  return {
+    ticks,
+    max: graphMax,
+  };
+};
+
 const BarChart = ({ data }: BarChartProps) => {
-  const svgWidth = 600;
-  const svgHeight = 400;
+  const [containerWidth, setContainerWidth] = useState(600);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const padding = { top: 40, right: 30, bottom: 50, left: 60 };
-  const plotWidth = svgWidth - padding.left - padding.right;
-  const plotHeight = svgHeight - padding.top - padding.bottom;
-
-  const maxDataValue =
-    data.length > 0 ? Math.max(...data.map((item) => item.value)) : 0;
-  const maxY = maxDataValue > 0 ? Math.ceil(maxDataValue * 1.15) : 100;
-
-  const ticksCount = 5;
-
-  const yTicks = Array.from({ length: ticksCount }, (_, i) =>
-    Math.round((maxY / (ticksCount - 1)) * i)
-  );
-
-  const count = data.length;
-  const xStep = count > 0 ? plotWidth / count : plotWidth;
-
-  const maxBarWidth = 48;
-  const barRatio = 0.6;
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (!entries || entries.length === 0) return;
+      const rect = entries[0].contentRect;
+      setContainerWidth(rect.width);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
@@ -61,19 +118,76 @@ const BarChart = ({ data }: BarChartProps) => {
     value: 0,
   });
 
+  if (data.length === 0) {
+    return (
+      <div className="border rounded-2xl p-6 w-full flex flex-col gap-4 relative min-h-[350px]">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Visual Analytics</h3>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-base">
+            No data available. Add data points to generate a chart.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const maxDataValue = Math.max(...data.map((item) => item.value));
+  const ticksCount = 5;
+  const { ticks: yTicks, max: maxY } = getNiceTicks(maxDataValue, ticksCount);
+
+  // Styling settings
+  const minBarWidth = 24;
+  const maxBarWidth = 48;
+  const barRatio = 0.6;
+  const minXStep = minBarWidth / barRatio; // 40
+
+  const count = data.length;
+  const shouldRotate =
+    data.some((item) => item.label.length > 6) || data.length > 8;
+
+  const maxTickLabelLength = Math.max(
+    ...yTicks.map((val) => val.toString().length),
+    1
+  );
+  const paddingLeft = Math.max(55, maxTickLabelLength * 8.5 + 15);
+
+  const padding = {
+    top: 50,
+    right: 30,
+    bottom: shouldRotate ? 75 : 45,
+    left: paddingLeft,
+  };
+
+  // width of plot area
+  const containerPlotWidth = Math.max(
+    0,
+    containerWidth - padding.left - padding.right
+  );
+  const plotWidth = Math.max(containerPlotWidth, count * minXStep);
+  const xStep = plotWidth / count;
+
+  const svgHeight = 400;
+  const plotHeight = svgHeight - padding.top - padding.bottom;
+
   return (
-    <div className="border rounded-2xl p-6 w-full flex flex-col gap-4 relative">
+    <div
+      ref={containerRef}
+      className="border rounded-2xl p-6 w-full flex flex-col gap-4 relative"
+    >
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Visual Analytics</h3>
         </div>
       </div>
 
-      <div className="relative w-full flex-1 min-h-75 flex items-center justify-center">
-        <div className="w-full relative select-none">
+      <div className="relative w-full flex-grow flex items-stretch min-h-[300px]">
+        <div className="flex-shrink-0" style={{ width: padding.left }}>
           <svg
-            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-            style={{ overflow: 'visible' }}
+            width={padding.left}
+            height={svgHeight}
+            className="overflow-visible block"
           >
             <line
               x1={padding.left}
@@ -83,49 +197,65 @@ const BarChart = ({ data }: BarChartProps) => {
               stroke="rgba(148, 163, 184, 1)"
               strokeWidth={1.5}
             />
-            <line
-              x1={padding.left}
-              y1={svgHeight - padding.bottom}
-              x2={svgWidth - padding.right}
-              y2={svgHeight - padding.bottom}
-              stroke="rgba(148, 163, 184, 1)"
-              strokeWidth={1.5}
-            />
 
-            {yTicks.map((tickValue) => {
+            {yTicks.map((tickValue, index) => {
               const yPos =
                 padding.top + plotHeight - (tickValue / maxY) * plotHeight;
 
               return (
-                <g key={tickValue}>
-                  <line
-                    x1={padding.left}
-                    y1={yPos}
-                    x2={svgWidth - padding.right}
-                    y2={yPos}
-                    stroke="#888b90"
-                    strokeWidth={1}
-                    strokeDasharray="4 4"
-                  />
-
+                <g key={`y-tick-${index}-${tickValue}`}>
                   <text
                     x={padding.left - 10}
                     y={yPos + 4}
                     textAnchor="end"
-                    fontSize={18}
-                    fill="#64748b"
+                    fontSize={12}
+                    className="fill-slate-500 font-mono"
                   >
                     {tickValue}
                   </text>
                 </g>
               );
             })}
+          </svg>
+        </div>
+
+        <div className="overflow-x-auto overflow-y-hidden flex-grow select-none scrollbar-thin scrollbar-thumb-slate-300">
+          <svg
+            width={plotWidth + padding.right}
+            height={svgHeight}
+            className="overflow-visible block"
+          >
+            <line
+              x1={0}
+              y1={svgHeight - padding.bottom}
+              x2={plotWidth}
+              y2={svgHeight - padding.bottom}
+              stroke="rgba(148, 163, 184, 1)"
+              strokeWidth={1.5}
+            />
+
+            {yTicks.map((tickValue, index) => {
+              const yPos =
+                padding.top + plotHeight - (tickValue / maxY) * plotHeight;
+
+              return (
+                <line
+                  key={`grid-${index}-${tickValue}`}
+                  x1={0}
+                  y1={yPos}
+                  x2={plotWidth}
+                  y2={yPos}
+                  stroke="rgba(226, 232, 240, 0.8)"
+                  strokeWidth={1}
+                  strokeDasharray="4 4"
+                />
+              );
+            })}
 
             {data.map((item, index) => {
               const barWidth = Math.min(xStep * barRatio, maxBarWidth);
               const barHeight = (item.value / maxY) * plotHeight;
-              const xPos =
-                padding.left + index * xStep + (xStep - barWidth) / 2;
+              const xPos = index * xStep + (xStep - barWidth) / 2;
               const yPos = padding.top + plotHeight - barHeight;
 
               return (
@@ -155,6 +285,29 @@ const BarChart = ({ data }: BarChartProps) => {
                       setTooltip((prev) => ({ ...prev, visible: false }))
                     }
                   />
+
+                  {shouldRotate ? (
+                    <text
+                      x={xPos + barWidth / 2}
+                      y={svgHeight - padding.bottom + 16}
+                      textAnchor="end"
+                      transform={`rotate(-40, ${xPos + barWidth / 2}, ${svgHeight - padding.bottom + 16})`}
+                      fontSize={11}
+                      className="fill-slate-500 font-medium"
+                    >
+                      {truncateXLabel(item.label, 12)}
+                    </text>
+                  ) : (
+                    <text
+                      x={xPos + barWidth / 2}
+                      y={svgHeight - padding.bottom + 20}
+                      textAnchor="middle"
+                      fontSize={11}
+                      className="fill-slate-500 font-medium"
+                    >
+                      {item.label}
+                    </text>
+                  )}
                 </g>
               );
             })}
@@ -163,11 +316,11 @@ const BarChart = ({ data }: BarChartProps) => {
               (() => {
                 const rawX = tooltip.x - TOOLTIP_WIDTH / 2;
                 const clampedX = Math.min(
-                  Math.max(rawX, padding.left),
-                  svgWidth - padding.right - TOOLTIP_WIDTH
+                  Math.max(rawX, 0),
+                  plotWidth + padding.right - TOOLTIP_WIDTH
                 );
                 const tooltipY = tooltip.y - TOOLTIP_HEIGHT - TOOLTIP_OFFSET;
-                const truncatedLabel = truncateLabel(tooltip.label);
+                const truncatedLabelText = truncateLabel(tooltip.label);
 
                 return (
                   <g pointerEvents="none">
@@ -197,7 +350,7 @@ const BarChart = ({ data }: BarChartProps) => {
                       fill="#94a3b8"
                       fontWeight={400}
                     >
-                      {truncatedLabel}
+                      {truncatedLabelText}
                     </text>
                     <text
                       x={clampedX + TOOLTIP_WIDTH / 2}
