@@ -59,7 +59,7 @@ const DataTable = ({ data, onDelete, onClearAll }: DataTableProps) => {
                         className="hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 hover:cursor-pointer transition-all duration-200"
                         title="Delete entry"
                       >
-                        <img src="/assets/delete.svg" alt="Delete" />
+                        <img src="/images/delete.svg" alt="Delete" />
                       </button>
                     </td>
                   </tr>
