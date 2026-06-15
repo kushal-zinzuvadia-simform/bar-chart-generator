@@ -1,3 +1,5 @@
+import { truncateLabel } from '../../utils/formatChart';
+
 type ChartTooltipProps = {
   x: number;
   y: number;
@@ -19,11 +21,6 @@ const MAX_LABEL_CHARS = Math.floor(
   (TOOLTIP_WIDTH - TOOLTIP_PADDING_X * 2) / APPROX_CHAR_WIDTH
 );
 
-const truncateLabel = (label: string): string => {
-  if (label.length <= MAX_LABEL_CHARS) return label;
-  return label.slice(0, MAX_LABEL_CHARS - 1) + '…';
-};
-
 export const ChartTooltip = ({
   x,
   y,
@@ -38,7 +35,7 @@ export const ChartTooltip = ({
     plotWidth + paddingRight - TOOLTIP_WIDTH
   );
   const tooltipY = y - TOOLTIP_HEIGHT - TOOLTIP_OFFSET;
-  const truncatedLabelText = truncateLabel(label);
+  const truncatedLabelText = truncateLabel(label, MAX_LABEL_CHARS);
 
   return (
     <g pointerEvents="none">

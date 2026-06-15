@@ -1,4 +1,6 @@
 import type { ChartItem } from '../../types/chart';
+import { DataRow } from './DataRow';
+import { EmptyTableState } from './EmptyTableState';
 
 type DataTableProps = {
   data: Array<ChartItem>;
@@ -36,33 +38,10 @@ const DataTable = ({ data, onDelete, onClearAll }: DataTableProps) => {
 
             <tbody>
               {data.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={3}
-                    className="px-4 py-12 text-center text-sm text-gray-500"
-                  >
-                    No data points added yet.
-                  </td>
-                </tr>
+                <EmptyTableState />
               ) : (
                 data.map((row) => (
-                  <tr key={row.id} className="border-b last:border-b-0 text-sm">
-                    <td className="px-4 py-3 font-medium truncate max-w-37.5">
-                      {row.label}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono">
-                      {row.value}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => onDelete(row.id)}
-                        className="hover:text-rose-400 p-1.5 rounded-lg hover:bg-rose-500/10 hover:cursor-pointer transition-all duration-200"
-                        title="Delete entry"
-                      >
-                        <img src="/images/delete.svg" alt="Delete" />
-                      </button>
-                    </td>
-                  </tr>
+                  <DataRow key={row.id} row={row} onDelete={onDelete} />
                 ))
               )}
             </tbody>

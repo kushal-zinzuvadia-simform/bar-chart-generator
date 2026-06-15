@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
 import type { ChartItem } from '../../types/chart';
+import { getNiceTicks, truncateLabel } from '../../utils/formatChart';
 import { ChartTooltip } from './ChartTooltip';
 
 type BarChartProps = {
@@ -13,72 +14,6 @@ type TooltipState = {
   y: number;
   label: string;
   value: number;
-};
-
-const truncateXLabel = (label: string, maxLen: number = 12): string => {
-  if (label.length <= maxLen) return label;
-  return label.slice(0, maxLen - 1) + '…';
-};
-
-// Heckbert's Nice Numbers algorithm
-const niceNum = (range: number, round: boolean): number => {
-  const exponent = Math.floor(Math.log10(range));
-  const fraction = range / Math.pow(10, exponent);
-  let niceFraction: number;
-
-  if (round) {
-    if (fraction < 1.5) niceFraction = 1;
-    else if (fraction < 3) niceFraction = 2;
-    else if (fraction < 7) niceFraction = 5;
-    else niceFraction = 10;
-  } else {
-    if (fraction <= 1) niceFraction = 1;
-    else if (fraction <= 2) niceFraction = 2;
-    else if (fraction <= 5) niceFraction = 5;
-    else niceFraction = 10;
-  }
-
-  return niceFraction * Math.pow(10, exponent);
-};
-
-const getNiceTicks = (
-  maxVal: number,
-  ticksCount: number = 5
-): { ticks: number[]; max: number } => {
-  if (maxVal <= 0) {
-    return {
-      ticks: [0, 25, 50, 75, 100],
-      max: 100,
-    };
-  }
-
-  const range = niceNum(maxVal, false);
-  const step = niceNum(range / (ticksCount - 1), true);
-  const graphMin = 0;
-
-  const ticks: number[] = [];
-  for (let i = 0; i < ticksCount; i++) {
-    ticks.push(parseFloat((graphMin + i * step).toFixed(8)));
-  }
-
-  const graphMax = ticks[ticksCount - 1];
-
-  if (graphMax < maxVal) {
-    const adjustedStep = niceNum((maxVal - graphMin) / (ticksCount - 1), false);
-    const adjustedTicks: number[] = [];
-    for (let i = 0; i < ticksCount; i++) {
-      adjustedTicks.push(parseFloat((graphMin + i * adjustedStep).toFixed(8)));
-    }
-    return {
-      ticks: adjustedTicks,
-      max: adjustedTicks[ticksCount - 1],
-    };
-  }
-
-  return {
-    ticks,
-    max: graphMax,
-  };
 };
 
 const BarChart = ({ data }: BarChartProps) => {
@@ -106,7 +41,7 @@ const BarChart = ({ data }: BarChartProps) => {
 
   if (data.length === 0) {
     return (
-      <div className="border rounded-2xl p-6 w-full flex flex-col gap-4 relative min-h-[350px]">
+      <div className="border rounded-2xl p-6 w-full flex flex-col gap-4 relative min-h-87.5">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Visual Analytics</h3>
         </div>
@@ -168,8 +103,8 @@ const BarChart = ({ data }: BarChartProps) => {
         </div>
       </div>
 
-      <div className="relative w-full flex-grow flex items-stretch min-h-[300px]">
-        <div className="flex-shrink-0" style={{ width: padding.left }}>
+      <div className="relative w-full grow flex items-stretch min-h-75">
+        <div className="shrink-0" style={{ width: padding.left }}>
           <svg
             width={padding.left}
             height={svgHeight}
@@ -205,7 +140,7 @@ const BarChart = ({ data }: BarChartProps) => {
           </svg>
         </div>
 
-        <div className="overflow-x-auto overflow-y-hidden flex-grow select-none scrollbar-thin scrollbar-thumb-slate-300">
+        <div className="overflow-x-auto overflow-y-hidden grow select-none scrollbar-thin scrollbar-thumb-slate-300">
           <svg
             width={plotWidth + padding.right}
             height={svgHeight}
@@ -281,7 +216,7 @@ const BarChart = ({ data }: BarChartProps) => {
                       fontSize={11}
                       className="fill-slate-500 font-medium"
                     >
-                      {truncateXLabel(item.label, 12)}
+                      {truncateLabel(item.label)}
                     </text>
                   ) : (
                     <text
