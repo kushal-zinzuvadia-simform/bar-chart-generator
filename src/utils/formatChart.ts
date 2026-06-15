@@ -4,7 +4,7 @@ export const truncateLabel = (label: string, maxLen: number = 12): string => {
 };
 
 // Heckbert's Nice Numbers algorithm
-const niceNum = (range: number, round: boolean): number => {
+const calculateNiceNumber = (range: number, round: boolean): number => {
   const exponent = Math.floor(Math.log10(range));
   const fraction = range / Math.pow(10, exponent);
   let niceFraction: number;
@@ -24,42 +24,28 @@ const niceNum = (range: number, round: boolean): number => {
   return niceFraction * Math.pow(10, exponent);
 };
 
-export const getNiceTicks = (
-  maxVal: number,
+export const calculateNiceTicks = (
+  maxValue: number,
   ticksCount: number = 5
 ): { ticks: Array<number>; max: number } => {
-  if (maxVal <= 0) {
+  if (maxValue <= 0) {
     return {
       ticks: [0, 25, 50, 75, 100],
       max: 100,
     };
   }
 
-  const range = niceNum(maxVal, false);
-  const step = niceNum(range / (ticksCount - 1), true);
-  const graphMin = 0;
+  const tickStep = calculateNiceNumber(maxValue / (ticksCount - 1), true);
+  const maxTickValue = Math.ceil(maxValue / tickStep) * tickStep;
 
   const ticks: Array<number> = [];
+
   for (let i = 0; i < ticksCount; i++) {
-    ticks.push(parseFloat((graphMin + i * step).toFixed(8)));
-  }
-
-  const graphMax = ticks[ticksCount - 1];
-
-  if (graphMax < maxVal) {
-    const adjustedStep = niceNum((maxVal - graphMin) / (ticksCount - 1), false);
-    const adjustedTicks: Array<number> = [];
-    for (let i = 0; i < ticksCount; i++) {
-      adjustedTicks.push(parseFloat((graphMin + i * adjustedStep).toFixed(8)));
-    }
-    return {
-      ticks: adjustedTicks,
-      max: adjustedTicks.at(-1),
-    };
+    ticks.push((maxTickValue / (ticksCount - 1)) * i);
   }
 
   return {
     ticks,
-    max: graphMax,
+    max: maxTickValue,
   };
 };

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 
 import type { ChartItem } from '../../types/chart';
-import { getNiceTicks, truncateLabel } from '../../utils/formatChart';
+import { calculateNiceTicks, truncateLabel } from '../../utils/formatChart';
 import { ChartTooltip } from './ChartTooltip';
 
 type BarChartProps = {
@@ -56,7 +56,7 @@ const BarChart = ({ data }: BarChartProps) => {
 
   const maxDataValue = Math.max(...data.map((item) => item.value));
   const ticksCount = 5;
-  const { ticks: yTicks, max: maxY } = getNiceTicks(maxDataValue, ticksCount);
+  const { ticks: yTicks, max: maxY } = calculateNiceTicks(maxDataValue, ticksCount);
 
   // Styling settings
   const minBarWidth = 24;
@@ -75,7 +75,7 @@ const BarChart = ({ data }: BarChartProps) => {
   const paddingLeft = Math.max(55, maxTickLabelLength * 8.5 + 15);
 
   const padding = {
-    top: 50,
+    top: 60,
     right: 30,
     bottom: shouldRotate ? 75 : 45,
     left: paddingLeft,

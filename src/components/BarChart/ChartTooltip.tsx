@@ -29,9 +29,9 @@ export const ChartTooltip = ({
   plotWidth,
   paddingRight,
 }: ChartTooltipProps) => {
-  const rawX = x - TOOLTIP_WIDTH / 2;
+  const tooltipX = x - TOOLTIP_WIDTH / 2;
   const clampedX = Math.min(
-    Math.max(rawX, 0),
+    Math.max(tooltipX, 0),
     plotWidth + paddingRight - TOOLTIP_WIDTH
   );
   const tooltipY = y - TOOLTIP_HEIGHT - TOOLTIP_OFFSET;
