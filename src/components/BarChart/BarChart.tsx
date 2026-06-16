@@ -41,6 +41,30 @@ const BarChart = ({ data }: BarChartProps) => {
     value: 0,
   });
 
+  const showTooltip = (
+    item: ChartItem,
+    xPos: number,
+    yPos: number,
+    barWidth: number
+  ) => {
+    setTooltip({
+      id: item.id,
+      visible: true,
+      x: xPos + barWidth / 2,
+      y: yPos,
+      label: item.label,
+      value: item.value,
+    });
+  };
+
+  const hideTooltip = () => {
+    setTooltip((prev) => ({
+      ...prev,
+      visible: false,
+      id: null,
+    }));
+  };
+
   if (data.length === 0) {
     return (
       <div className="border rounded-2xl p-6 w-full flex flex-col gap-4 relative min-h-87.5">
@@ -191,30 +215,19 @@ const BarChart = ({ data }: BarChartProps) => {
                     y={yPos}
                     width={barWidth}
                     height={barHeight}
+                    tabIndex={0}
+                    aria-label={`${item.label}: ${item.value}`}
                     fill={
                       tooltip.visible && tooltip.id === item.id
-                        ? '#4f46e5' // Active bar color
-                        : '#6366f1' // Bar color
+                        ? '#4f46e5'
+                        : '#6366f1'
                     }
                     rx={5}
                     style={{ cursor: 'pointer', transition: 'fill 0.15s ease' }}
-                    onMouseEnter={() =>
-                      setTooltip({
-                        id: item.id,
-                        visible: true,
-                        x: xPos + barWidth / 2,
-                        y: yPos,
-                        label: item.label,
-                        value: item.value,
-                      })
-                    }
-                    onMouseLeave={() =>
-                      setTooltip((prev) => ({
-                        ...prev,
-                        visible: false,
-                        id: null,
-                      }))
-                    }
+                    onMouseEnter={() => showTooltip(item, xPos, yPos, barWidth)}
+                    onMouseLeave={hideTooltip}
+                    onFocus={() => showTooltip(item, xPos, yPos, barWidth)}
+                    onBlur={hideTooltip}
                   />
 
                   {shouldRotate ? (
