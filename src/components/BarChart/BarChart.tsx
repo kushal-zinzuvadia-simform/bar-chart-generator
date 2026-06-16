@@ -9,6 +9,7 @@ type BarChartProps = {
 };
 
 type TooltipState = {
+  id: string | null;
   visible: boolean;
   x: number;
   y: number;
@@ -32,6 +33,7 @@ const BarChart = ({ data }: BarChartProps) => {
   }, []);
 
   const [tooltip, setTooltip] = useState<TooltipState>({
+    id: null,
     visible: false,
     x: 0,
     y: 0,
@@ -56,7 +58,10 @@ const BarChart = ({ data }: BarChartProps) => {
 
   const maxDataValue = Math.max(...data.map((item) => item.value));
   const ticksCount = 5;
-  const { ticks: yTicks, max: maxY } = calculateNiceTicks(maxDataValue, ticksCount);
+  const { ticks: yTicks, max: maxY } = calculateNiceTicks(
+    maxDataValue,
+    ticksCount
+  );
 
   // Styling settings
   const minBarWidth = 24;
@@ -187,14 +192,15 @@ const BarChart = ({ data }: BarChartProps) => {
                     width={barWidth}
                     height={barHeight}
                     fill={
-                      tooltip.visible && tooltip.label === item.label
-                        ? '#4f46e5'
-                        : '#6366f1'
+                      tooltip.visible && tooltip.id === item.id
+                        ? '#4f46e5' // Active bar color
+                        : '#6366f1' // Bar color
                     }
                     rx={5}
                     style={{ cursor: 'pointer', transition: 'fill 0.15s ease' }}
                     onMouseEnter={() =>
                       setTooltip({
+                        id: item.id,
                         visible: true,
                         x: xPos + barWidth / 2,
                         y: yPos,
@@ -203,7 +209,11 @@ const BarChart = ({ data }: BarChartProps) => {
                       })
                     }
                     onMouseLeave={() =>
-                      setTooltip((prev) => ({ ...prev, visible: false }))
+                      setTooltip((prev) => ({
+                        ...prev,
+                        visible: false,
+                        id: null,
+                      }))
                     }
                   />
 
