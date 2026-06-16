@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 
 import type { ChartItem } from '../../types/chart';
 import { calculateNiceTicks, truncateLabel } from '../../utils/formatChart';
@@ -18,8 +18,24 @@ type TooltipState = {
 };
 
 const BarChart = ({ data }: BarChartProps) => {
-  const [containerWidth, setContainerWidth] = useState(600);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  const [tooltip, setTooltip] = useState<TooltipState>({
+    id: null,
+    visible: false,
+    x: 0,
+    y: 0,
+    label: '',
+    value: 0,
+  });
+
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      setContainerWidth(containerRef.current.clientWidth);
+    }
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -31,15 +47,6 @@ const BarChart = ({ data }: BarChartProps) => {
     observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
-
-  const [tooltip, setTooltip] = useState<TooltipState>({
-    id: null,
-    visible: false,
-    x: 0,
-    y: 0,
-    label: '',
-    value: 0,
-  });
 
   const showTooltip = (
     item: ChartItem,
