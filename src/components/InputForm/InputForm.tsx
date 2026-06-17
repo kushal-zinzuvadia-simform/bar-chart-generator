@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+
 import type { AddItemProps } from '../../types/chart';
 
 type InputFormProps = {
@@ -27,37 +28,51 @@ const InputForm = ({ onAdd }: InputFormProps) => {
   };
 
   return (
-    <div className="p-4">
-      <form className="flex items-center gap-3" onSubmit={handleSubmit}>
-        <label htmlFor="inputX" className="text-sm font-medium">
-          X:
-        </label>
-        <input
-          id="inputX"
-          type="text"
-          placeholder="Category (e.g., Electronics)"
-          maxLength={20}
-          ref={labelRef}
-          className="border rounded px-3 py-2 text-sm outline-none focus:ring-1"
-        />
+    <div className="border rounded-2xl p-6 w-full max-w-md">
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        Add Data Point
+      </h3>
+      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="inputX"
+            className="text-xs font-semibold uppercase tracking-wider"
+          >
+            X-Axis Label (Category)
+          </label>
+          <input
+            id="inputX"
+            type="text"
+            placeholder="e.g. July or Q3"
+            maxLength={20}
+            ref={labelRef}
+            className="w-full border rounded-xl px-4 py-2.5 text-sm"
+          />
+        </div>
 
-        <label htmlFor="inputY" className="text-sm font-medium">
-          Y:
-        </label>
-        <input
-          id="inputY"
-          type="number"
-          placeholder="Value (e.g., 20)"
-          max={10000000000}
-          ref={valueRef}
-          className="border rounded px-3 py-2 text-sm outline-none focus:ring-1"
-        />
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="inputY"
+            className="text-xs font-semibold uppercase tracking-wider"
+          >
+            Y-Axis Value (Numeric)
+          </label>
+          <input
+            id="inputY"
+            type="number"
+            step="any"
+            placeholder="e.g. 150"
+            max={10000000000}
+            ref={valueRef}
+            className="w-full border rounded-xl px-4 py-2.5 text-sm"
+          />
+        </div>
 
         <button
           type="submit"
-          className="bg-black text-white px-4 py-2 rounded text-sm"
+          className="w-full bg-black text-white font-medium py-3 px-4 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-px active:translate-y-0 hover:cursor-pointer flex items-center justify-center gap-2"
         >
-          Add Data
+          + Add to Chart
         </button>
       </form>
     </div>
